@@ -39,3 +39,4 @@ claudedocs
 
 # Vitals provenance data
 .vitals/
+.worktrees/
