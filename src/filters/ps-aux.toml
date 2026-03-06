@@ -1,0 +1,16 @@
+[filters.ps-aux]
+description = "Compact ps output — truncate wide lines, limit rows"
+match_command = "^ps\\b"
+strip_ansi = true
+truncate_lines_at = 120
+max_lines = 30
+
+[[tests.ps-aux]]
+name = "short process list passes through unchanged"
+input = "USER   PID %CPU %MEM COMMAND\nroot     1  0.0  0.0 /sbin/launchd\nflorian  42  0.1  0.2 bash"
+expected = "USER   PID %CPU %MEM COMMAND\nroot     1  0.0  0.0 /sbin/launchd\nflorian  42  0.1  0.2 bash"
+
+[[tests.ps-aux]]
+name = "empty input passes through"
+input = ""
+expected = ""

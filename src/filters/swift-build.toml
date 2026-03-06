@@ -1,0 +1,33 @@
+[filters.swift-build]
+description = "Compact swift build output — short-circuit on success, strip Compiling/Linking"
+match_command = "^swift\\s+build\\b"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Compiling ",
+  "^Linking ",
+  "^Build complete!",
+]
+match_output = [
+  { pattern = "Build complete!", message = "ok (build complete)" },
+]
+max_lines = 40
+
+[[tests.swift-build]]
+name = "successful build short-circuits to ok"
+input = """
+Build complete!
+"""
+expected = "ok (build complete)"
+
+[[tests.swift-build]]
+name = "build errors pass through after stripping noise"
+input = """
+Compiling MyApp MyApp.swift
+/home/user/MyApp/Sources/MyApp/main.swift:5:1: error: use of unresolved identifier 'foo'
+foo()
+^~~
+Linking MyApp
+error: build had 1 command failure
+"""
+expected = "/home/user/MyApp/Sources/MyApp/main.swift:5:1: error: use of unresolved identifier 'foo'\nfoo()\n^~~\nerror: build had 1 command failure"

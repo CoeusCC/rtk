@@ -1408,26 +1408,41 @@ match_command = "^make\\b"
 
         let expected = [
             "ansible-playbook",
+            "brew-install",
+            "composer-install",
+            "df",
+            "dotnet-build",
             "du",
             "fail2ban-client",
             "gcloud",
+            "hadolint",
             "helm",
             "iptables",
             "make",
+            "markdownlint",
             "mix-compile",
             "mix-format",
             "mvn-build",
+            "ping",
             "pio-run",
+            "poetry-install",
             "pre-commit",
+            "ps-aux",
             "quarto-render",
+            "rsync",
+            "shellcheck",
             "shopify-theme",
             "sops",
+            "swift-build",
+            "systemctl-status",
             "terraform-plan",
             "tofu-fmt",
             "tofu-init",
             "tofu-plan",
             "tofu-validate",
             "trunk-build",
+            "uv-sync",
+            "yamllint",
         ];
 
         for name in &expected {
@@ -1446,8 +1461,8 @@ match_command = "^make\\b"
         let filters = make_filters(BUILTIN_TOML);
         assert_eq!(
             filters.len(),
-            21,
-            "Expected exactly 21 built-in filters, got {}. \
+            36,
+            "Expected exactly 36 built-in filters, got {}. \
              Update this count when adding/removing filters in src/filters/.",
             filters.len()
         );
@@ -1504,11 +1519,11 @@ expected = "output line 1\noutput line 2"
         let combined = format!("{}\n\n{}", BUILTIN_TOML, new_filter);
         let filters = make_filters(&combined);
 
-        // All 21 existing filters still present + 1 new = 22
+        // All 36 existing filters still present + 1 new = 37
         assert_eq!(
             filters.len(),
-            22,
-            "Expected 22 filters after concat (21 built-in + 1 new)"
+            37,
+            "Expected 37 filters after concat (36 built-in + 1 new)"
         );
 
         // New filter is discoverable
