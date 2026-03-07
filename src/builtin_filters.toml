@@ -12,7 +12,7 @@ max_lines = 50
 
 [filters.terraform-plan]
 description = "Compact Terraform plan output"
-match_command = "^terraform\\s+plan"
+match_command = "^terraform\\s+plan(\\s|$)"
 strip_ansi = true
 strip_lines_matching = [
   "^Refreshing state",
@@ -24,39 +24,6 @@ strip_lines_matching = [
 max_lines = 80
 on_empty = "terraform plan: no changes detected"
 
-[filters.git-checkout]
-description = "Compact git checkout output"
-match_command = "^git\\s+checkout"
-match_output = [
-  { pattern = "(?m)^Switched to", message = "ok" },
-  { pattern = "(?m)^Already on", message = "ok (already on branch)" },
-  { pattern = "(?m)^Updated \\d+", message = "ok (files updated)" },
-]
-
-[filters.git-remote]
-description = "Compact git remote output"
-match_command = "^git\\s+remote"
-strip_lines_matching = ["^\\s*$"]
-max_lines = 10
-
-[filters.git-merge]
-description = "Compact git merge output"
-match_command = "^git\\s+merge"
-match_output = [
-  { pattern = "(?m)^Already up to date", message = "ok (already up to date)" },
-  { pattern = "(?m)^Fast-forward", message = "ok (fast-forward)" },
-  { pattern = "(?m)^Merge made by", message = "ok (merge commit)" },
-]
-
-[filters.cargo-run]
-description = "Compact cargo run output: strip build noise, keep program output"
-match_command = "^cargo\\s+run"
-strip_ansi = true
-strip_lines_matching = [
-  "^\\s*Compiling\\s",
-  "^\\s*Finished\\s",
-  "^\\s*Running\\s`",
-]
 
 # ---------------------------------------------------------------------------
 # Inline tests
@@ -84,15 +51,6 @@ name = "strips noise, preserves non-blank content"
 input = "Refreshing state... [id=vpc-abc]\nNo changes. Your infrastructure matches the configuration."
 expected = "No changes. Your infrastructure matches the configuration."
 
-[[tests.git-remote]]
-name = "passthrough for short output"
-input = "origin"
-expected = "origin"
-
-[[tests.git-remote]]
-name = "strips blank lines"
-input = "origin\n\nupstream"
-expected = "origin\nupstream"
 
 [[tests.make]]
 name = "strips entering/leaving lines"
@@ -125,51 +83,6 @@ make[1]: Leaving directory '/home/user'
 """
 expected = ""
 
-[[tests.git-checkout]]
-name = "Switched to branch short-circuits"
-input = "Switched to branch 'main'"
-expected = "ok"
-
-[[tests.git-checkout]]
-name = "Already on short-circuits"
-input = "Already on 'main'"
-expected = "ok (already on branch)"
-
-[[tests.git-checkout]]
-name = "No match passes through"
-input = "error: pathspec 'nope' did not match any file(s) known to git"
-expected = "error: pathspec 'nope' did not match any file(s) known to git"
-
-[[tests.git-merge]]
-name = "Already up to date short-circuits"
-input = "Already up to date."
-expected = "ok (already up to date)"
-
-[[tests.git-merge]]
-name = "Fast-forward short-circuits"
-input = "Updating abc123..def456\nFast-forward\n foo.rs | 2 +-"
-expected = "ok (fast-forward)"
-
-[[tests.cargo-run]]
-name = "strips build noise, keeps program output"
-input = """
-   Compiling myapp v0.1.0
-   Finished dev [unoptimized] target(s) in 1.23s
-    Running `target/debug/myapp`
-Hello, world!
-"""
-expected = """
-Hello, world!
-"""
-
-[[tests.cargo-run]]
-name = "empty program output returns empty"
-input = """
-   Compiling myapp v0.1.0
-   Finished dev [unoptimized] target(s) in 0.5s
-    Running `target/debug/myapp`
-"""
-expected = ""
 
 # ---------------------------------------------------------------------------
 # #240 OpenTofu (mirror of Terraform filters)
@@ -247,7 +160,7 @@ max_lines = 30
 
 [filters.iptables]
 description = "Compact iptables output"
-match_command = "^iptables\\b"
+match_command = "^iptables(\\s|$)"
 strip_lines_matching = [
   "^\\s*$",
   "^Chain DOCKER",

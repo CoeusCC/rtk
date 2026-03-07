@@ -979,7 +979,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
     let timer = tracking::TimedExecution::start();
 
     // TOML filter lookup — bypass with RTK_NO_TOML=1
-    let toml_match = if std::env::var("RTK_NO_TOML").is_ok() {
+    let toml_match = if std::env::var("RTK_NO_TOML").ok().as_deref() == Some("1") {
         None
     } else {
         toml_filter::find_matching_filter(&raw_command)
@@ -999,16 +999,21 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
                 let stdout_raw = String::from_utf8_lossy(&output.stdout);
 
                 // Tee raw output BEFORE filtering on failure — lets LLM re-read if needed
-                if !output.status.success() {
-                    let _ = tee::tee_and_hint(
+                let tee_hint = if !output.status.success() {
+                    tee::tee_and_hint(
                         &stdout_raw,
                         &raw_command,
                         output.status.code().unwrap_or(1),
-                    );
-                }
+                    )
+                } else {
+                    None
+                };
 
                 let filtered = toml_filter::apply_filter(filter, &stdout_raw);
-                print!("{}", filtered);
+                println!("{}", filtered);
+                if let Some(hint) = tee_hint {
+                    println!("{}", hint);
+                }
 
                 timer.track(
                     &raw_command,
@@ -1939,13 +1944,13 @@ fn main() -> Result<()> {
             filter,
             require_all,
         } => {
-            if filter.is_some() || require_all {
-                // Filter test mode: run TOML inline tests
+            if filter.is_some() {
+                // Filter-specific mode: run only that filter's tests
                 verify_cmd::run(filter, require_all)?;
             } else {
-                // Default: hook integrity check + TOML filter tests
+                // Default or --require-all: always run integrity check first
                 integrity::run_verify(cli.verbose)?;
-                verify_cmd::run(None, false)?;
+                verify_cmd::run(None, require_all)?;
             }
         }
     }
