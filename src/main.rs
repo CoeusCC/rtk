@@ -979,10 +979,21 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
     let timer = tracking::TimedExecution::start();
 
     // TOML filter lookup — bypass with RTK_NO_TOML=1
+    // Use basename of args[0] so absolute paths (/usr/bin/make) still match "^make\b".
+    let lookup_cmd = {
+        let base = std::path::Path::new(&args[0])
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_else(|| args[0].clone());
+        std::iter::once(base.as_str())
+            .chain(args[1..].iter().map(|s| s.as_str()))
+            .collect::<Vec<_>>()
+            .join(" ")
+    };
     let toml_match = if std::env::var("RTK_NO_TOML").ok().as_deref() == Some("1") {
         None
     } else {
-        toml_filter::find_matching_filter(&raw_command)
+        toml_filter::find_matching_filter(&lookup_cmd)
     };
 
     if let Some(filter) = toml_match {
@@ -1000,11 +1011,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
 
                 // Tee raw output BEFORE filtering on failure — lets LLM re-read if needed
                 let tee_hint = if !output.status.success() {
-                    tee::tee_and_hint(
-                        &stdout_raw,
-                        &raw_command,
-                        output.status.code().unwrap_or(1),
-                    )
+                    tee::tee_and_hint(&stdout_raw, &raw_command, output.status.code().unwrap_or(1))
                 } else {
                     None
                 };
@@ -1030,8 +1037,8 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
             Err(e) => {
                 // Command not found — same behaviour as no-TOML path
                 tracking::record_parse_failure_silent(&raw_command, &error_message, false);
-                eprintln!("[rtk: fallback failed: {}]", e);
-                parse_error.exit();
+                eprintln!("[rtk: {}]", e);
+                std::process::exit(127);
             }
         }
     } else {
@@ -1055,9 +1062,9 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
             }
             Err(e) => {
                 tracking::record_parse_failure_silent(&raw_command, &error_message, false);
-                // Command not found or other OS error — show Clap's original error
-                eprintln!("[rtk: fallback failed: {}]", e);
-                parse_error.exit();
+                // Command not found or other OS error — single message, no duplicate Clap error
+                eprintln!("[rtk: {}]", e);
+                std::process::exit(127);
             }
         }
     }

@@ -9,6 +9,7 @@ strip_lines_matching = [
   "^Nothing to be done",
 ]
 max_lines = 50
+on_empty = "make: ok"
 
 [filters.terraform-plan]
 description = "Compact Terraform plan output"
@@ -77,11 +78,8 @@ gcc -O2 bar.c
 
 [[tests.make]]
 name = "on_empty when all stripped"
-input = """
-make[1]: Entering directory '/home/user'
-make[1]: Leaving directory '/home/user'
-"""
-expected = ""
+input = "make[1]: Entering directory '/home/user'\nmake[1]: Nothing to be done for 'all'.\nmake[1]: Leaving directory '/home/user'\n"
+expected = "make: ok"
 
 
 # ---------------------------------------------------------------------------
