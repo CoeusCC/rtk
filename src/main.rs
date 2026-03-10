@@ -63,6 +63,7 @@ use clap::error::ErrorKind;
 use clap::{Parser, Subcommand};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use utils::resolve_binary;
 
 #[derive(Parser)]
 #[command(
@@ -998,7 +999,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
 
     if let Some(filter) = toml_match {
         // TOML match: capture stdout for filtering
-        let result = std::process::Command::new(&args[0])
+        let result = std::process::Command::new(resolve_binary(&args[0]))
             .args(&args[1..])
             .stdin(std::process::Stdio::inherit())
             .stdout(std::process::Stdio::piped()) // capture
@@ -1043,7 +1044,7 @@ fn run_fallback(parse_error: clap::Error) -> Result<()> {
         }
     } else {
         // No TOML match: original passthrough behaviour (Stdio::inherit, streaming)
-        let status = std::process::Command::new(&args[0])
+        let status = std::process::Command::new(resolve_binary(&args[0]))
             .args(&args[1..])
             .stdin(std::process::Stdio::inherit())
             .stdout(std::process::Stdio::inherit())
@@ -1734,7 +1735,7 @@ fn main() -> Result<()> {
                             _ => {
                                 // Passthrough other prisma subcommands
                                 let timer = tracking::TimedExecution::start();
-                                let mut cmd = std::process::Command::new("npx");
+                                let mut cmd = std::process::Command::new(resolve_binary("npx"));
                                 for arg in &args {
                                     cmd.arg(arg);
                                 }
@@ -1751,7 +1752,7 @@ fn main() -> Result<()> {
                         }
                     } else {
                         let timer = tracking::TimedExecution::start();
-                        let status = std::process::Command::new("npx")
+                        let status = std::process::Command::new(resolve_binary("npx"))
                             .arg("prisma")
                             .status()
                             .context("Failed to run npx prisma")?;
@@ -1867,7 +1868,7 @@ fn main() -> Result<()> {
                 eprintln!("Proxy mode: {} {}", cmd_name, cmd_args.join(" "));
             }
 
-            let mut child = Command::new(cmd_name.as_ref())
+            let mut child = Command::new(resolve_binary(cmd_name.as_ref()))
                 .args(&cmd_args)
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())

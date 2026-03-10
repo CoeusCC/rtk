@@ -1,7 +1,7 @@
 use crate::prettier_cmd;
 use crate::ruff_cmd;
 use crate::tracking;
-use crate::utils::package_manager_exec;
+use crate::utils::{package_manager_exec, resolve_binary};
 use anyhow::{Context, Result};
 use std::path::Path;
 use std::process::Command;
@@ -72,9 +72,9 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     // Build command based on formatter
     let mut cmd = match formatter.as_str() {
         "prettier" => package_manager_exec("prettier"),
-        "black" | "ruff" => Command::new(formatter.as_str()),
+        "black" | "ruff" => Command::new(resolve_binary(formatter.as_str())),
         "biome" => package_manager_exec("biome"),
-        _ => Command::new(formatter.as_str()),
+        _ => Command::new(resolve_binary(formatter.as_str())),
     };
 
     // Add formatter-specific flags

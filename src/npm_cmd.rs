@@ -1,11 +1,12 @@
 use crate::tracking;
+use crate::utils::resolve_binary;
 use anyhow::{Context, Result};
 use std::process::Command;
 
 pub fn run(args: &[String], verbose: u8, skip_env: bool) -> Result<()> {
     let timer = tracking::TimedExecution::start();
 
-    let mut cmd = Command::new("npm");
+    let mut cmd = Command::new(resolve_binary("npm"));
     cmd.arg("run");
 
     // Strip leading "run" to avoid doubling (rtk npm run build → npm run build, not npm run run build)

@@ -1,5 +1,5 @@
 use crate::tracking;
-use crate::utils::truncate;
+use crate::utils::{resolve_binary, tool_exists, truncate};
 use anyhow::{Context, Result};
 use regex::Regex;
 use std::collections::HashMap;
@@ -9,16 +9,12 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     let timer = tracking::TimedExecution::start();
 
     // Try tsc directly first, fallback to npx if not found
-    let tsc_exists = Command::new("which")
-        .arg("tsc")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
+    let tsc_exists = tool_exists("tsc");
 
     let mut cmd = if tsc_exists {
-        Command::new("tsc")
+        Command::new(resolve_binary("tsc"))
     } else {
-        let mut c = Command::new("npx");
+        let mut c = Command::new(resolve_binary("npx"));
         c.arg("tsc");
         c
     };

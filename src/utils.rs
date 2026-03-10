@@ -226,32 +226,39 @@ pub fn detect_package_manager() -> &'static str {
     }
 }
 
+/// Resolve a binary name to its full path, honoring PATHEXT on Windows.
+/// Falls back to the original name if not found (lets Command::new produce its usual error).
+pub fn resolve_binary(name: &str) -> std::ffi::OsString {
+    which::which(name)
+        .map(|p| p.into_os_string())
+        .unwrap_or_else(|_| name.into())
+}
+
+/// Check if a tool exists on PATH (cross-platform replacement for `Command::new("which")`).
+pub fn tool_exists(name: &str) -> bool {
+    which::which(name).is_ok()
+}
+
 /// Build a Command using the detected package manager's exec mechanism.
 /// Returns a Command ready to have tool-specific args appended.
 pub fn package_manager_exec(tool: &str) -> Command {
-    let tool_exists = Command::new("which")
-        .arg(tool)
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false);
-
-    if tool_exists {
-        Command::new(tool)
+    if tool_exists(tool) {
+        Command::new(resolve_binary(tool))
     } else {
         let pm = detect_package_manager();
         match pm {
             "pnpm" => {
-                let mut c = Command::new("pnpm");
+                let mut c = Command::new(resolve_binary("pnpm"));
                 c.arg("exec").arg("--").arg(tool);
                 c
             }
             "yarn" => {
-                let mut c = Command::new("yarn");
+                let mut c = Command::new(resolve_binary("yarn"));
                 c.arg("exec").arg("--").arg(tool);
                 c
             }
             _ => {
-                let mut c = Command::new("npx");
+                let mut c = Command::new(resolve_binary("npx"));
                 c.arg("--no-install").arg("--").arg(tool);
                 c
             }
@@ -396,6 +403,32 @@ mod tests {
         assert_eq!(format_cpt(-0.000001), "$0.00/MTok"); // negative
         assert_eq!(format_cpt(f64::INFINITY), "$0.00/MTok"); // infinite
         assert_eq!(format_cpt(f64::NAN), "$0.00/MTok"); // NaN
+    }
+
+    #[test]
+    fn test_resolve_binary_known() {
+        // cargo exists on all dev machines
+        let resolved = resolve_binary("cargo");
+        assert!(!resolved.is_empty());
+    }
+
+    #[test]
+    fn test_resolve_binary_unknown() {
+        let resolved = resolve_binary("nonexistent_tool_xyz_99999");
+        assert_eq!(
+            resolved,
+            std::ffi::OsString::from("nonexistent_tool_xyz_99999")
+        );
+    }
+
+    #[test]
+    fn test_tool_exists_positive() {
+        assert!(tool_exists("cargo"));
+    }
+
+    #[test]
+    fn test_tool_exists_negative() {
+        assert!(!tool_exists("nonexistent_tool_xyz_99999"));
     }
 
     #[test]

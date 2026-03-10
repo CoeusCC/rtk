@@ -1,5 +1,5 @@
 use crate::tracking;
-use crate::utils::truncate;
+use crate::utils::{resolve_binary, tool_exists, truncate};
 use anyhow::{Context, Result};
 use std::process::Command;
 
@@ -15,11 +15,11 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     let timer = tracking::TimedExecution::start();
 
     // Try to detect pytest command (could be "pytest", "python -m pytest", etc.)
-    let mut cmd = if which_command("pytest").is_some() {
-        Command::new("pytest")
+    let mut cmd = if tool_exists("pytest") {
+        Command::new(resolve_binary("pytest"))
     } else {
         // Fallback to python -m pytest
-        let mut c = Command::new("python");
+        let mut c = Command::new(resolve_binary("python"));
         c.arg("-m").arg("pytest");
         c
     };
@@ -81,18 +81,6 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     }
 
     Ok(())
-}
-
-/// Check if a command exists in PATH
-fn which_command(cmd: &str) -> Option<String> {
-    Command::new("which")
-        .arg(cmd)
-        .output()
-        .ok()
-        .filter(|o| o.status.success())
-        .and_then(|o| String::from_utf8(o.stdout).ok())
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
 }
 
 /// Parse pytest output using state machine

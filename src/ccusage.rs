@@ -4,6 +4,7 @@
 //! Claude Code API usage metrics. Handles subprocess execution, JSON parsing,
 //! and graceful degradation when ccusage is unavailable.
 
+use crate::utils::{resolve_binary, tool_exists};
 use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::process::Command;
@@ -82,23 +83,14 @@ struct MonthlyEntry {
 
 // ── Public API ──
 
-/// Check if ccusage binary exists in PATH
-fn binary_exists() -> bool {
-    Command::new("which")
-        .arg("ccusage")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
-}
-
 /// Build the ccusage command, falling back to npx if binary not in PATH
 fn build_command() -> Option<Command> {
-    if binary_exists() {
-        return Some(Command::new("ccusage"));
+    if tool_exists("ccusage") {
+        return Some(Command::new(resolve_binary("ccusage")));
     }
 
     // Fallback: try npx
-    let npx_check = Command::new("npx")
+    let npx_check = Command::new(resolve_binary("npx"))
         .arg("ccusage")
         .arg("--help")
         .stdout(std::process::Stdio::null())
@@ -106,7 +98,7 @@ fn build_command() -> Option<Command> {
         .status();
 
     if npx_check.map(|s| s.success()).unwrap_or(false) {
-        let mut cmd = Command::new("npx");
+        let mut cmd = Command::new(resolve_binary("npx"));
         cmd.arg("ccusage");
         return Some(cmd);
     }

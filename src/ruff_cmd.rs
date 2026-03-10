@@ -1,5 +1,5 @@
 use crate::tracking;
-use crate::utils::truncate;
+use crate::utils::{resolve_binary, truncate};
 use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -38,7 +38,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
 
     let is_format = args.iter().any(|a| a == "format");
 
-    let mut cmd = Command::new("ruff");
+    let mut cmd = Command::new(resolve_binary("ruff"));
 
     if is_check {
         // Force JSON output for check command

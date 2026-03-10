@@ -1,7 +1,7 @@
 use crate::mypy_cmd;
 use crate::ruff_cmd;
 use crate::tracking;
-use crate::utils::{package_manager_exec, truncate};
+use crate::utils::{package_manager_exec, resolve_binary, truncate};
 use anyhow::{Context, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -93,7 +93,7 @@ pub fn run(args: &[String], verbose: u8) -> Result<()> {
     // Python linters use Command::new() directly (they're on PATH via pip/pipx)
     // JS linters use package_manager_exec (npx/pnpm exec)
     let mut cmd = if is_python_linter(linter) {
-        Command::new(linter)
+        Command::new(resolve_binary(linter))
     } else {
         package_manager_exec(linter)
     };
