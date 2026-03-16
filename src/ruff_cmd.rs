@@ -121,7 +121,7 @@ pub fn filter_ruff_check_json(output: &str) -> String {
             return format!(
                 "Ruff check (JSON parse failed: {})\n{}",
                 e,
-                truncate(output, 500)
+                truncate(output, 2000)
             );
         }
     };

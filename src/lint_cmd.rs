@@ -234,7 +234,7 @@ fn filter_eslint_json(output: &str) -> String {
             return format!(
                 "ESLint output (JSON parse failed: {})\n{}",
                 e,
-                truncate(output, 500)
+                truncate(output, 2000)
             );
         }
     };
@@ -326,7 +326,7 @@ fn filter_pylint_json(output: &str) -> String {
             return format!(
                 "Pylint output (JSON parse failed: {})\n{}",
                 e,
-                truncate(output, 500)
+                truncate(output, 2000)
             );
         }
     };

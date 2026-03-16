@@ -594,31 +594,31 @@ fn format_status_output(porcelain: &str) -> String {
     // Build summary
     if staged > 0 {
         output.push_str(&format!("✅ Staged: {} files\n", staged));
-        for f in staged_files.iter().take(5) {
+        for f in staged_files.iter().take(15) {
             output.push_str(&format!("   {}\n", f));
         }
-        if staged_files.len() > 5 {
-            output.push_str(&format!("   ... +{} more\n", staged_files.len() - 5));
+        if staged_files.len() > 15 {
+            output.push_str(&format!("   ... +{} more\n", staged_files.len() - 15));
         }
     }
 
     if modified > 0 {
         output.push_str(&format!("📝 Modified: {} files\n", modified));
-        for f in modified_files.iter().take(5) {
+        for f in modified_files.iter().take(15) {
             output.push_str(&format!("   {}\n", f));
         }
-        if modified_files.len() > 5 {
-            output.push_str(&format!("   ... +{} more\n", modified_files.len() - 5));
+        if modified_files.len() > 15 {
+            output.push_str(&format!("   ... +{} more\n", modified_files.len() - 15));
         }
     }
 
     if untracked > 0 {
         output.push_str(&format!("❓ Untracked: {} files\n", untracked));
-        for f in untracked_files.iter().take(3) {
+        for f in untracked_files.iter().take(10) {
             output.push_str(&format!("   {}\n", f));
         }
-        if untracked_files.len() > 3 {
-            output.push_str(&format!("   ... +{} more\n", untracked_files.len() - 3));
+        if untracked_files.len() > 10 {
+            output.push_str(&format!("   ... +{} more\n", untracked_files.len() - 10));
         }
     }
 
@@ -1690,23 +1690,18 @@ A  added.rs
 
     #[test]
     fn test_format_status_output_truncation() {
-        // Test that >5 staged files show "... +N more"
-        let porcelain = r#"## main
-M  file1.rs
-M  file2.rs
-M  file3.rs
-M  file4.rs
-M  file5.rs
-M  file6.rs
-M  file7.rs
-"#;
-        let result = format_status_output(porcelain);
-        assert!(result.contains("✅ Staged: 7 files"));
+        // Test that >15 staged files show "... +N more"
+        let mut porcelain = String::from("## main\n");
+        for i in 1..=20 {
+            porcelain.push_str(&format!("M  file{}.rs\n", i));
+        }
+        let result = format_status_output(&porcelain);
+        assert!(result.contains("✅ Staged: 20 files"));
         assert!(result.contains("file1.rs"));
-        assert!(result.contains("file5.rs"));
-        assert!(result.contains("... +2 more"));
-        assert!(!result.contains("file6.rs"));
-        assert!(!result.contains("file7.rs"));
+        assert!(result.contains("file15.rs"));
+        assert!(result.contains("... +5 more"));
+        assert!(!result.contains("file16.rs"));
+        assert!(!result.contains("file20.rs"));
     }
 
     #[test]

@@ -306,7 +306,7 @@ enum Commands {
         #[arg(short = 'l', long, default_value = "80")]
         max_len: usize,
         /// Max results to show
-        #[arg(short, long, default_value = "50")]
+        #[arg(short, long, default_value = "200")]
         max: usize,
         /// Show only match context (not full line)
         #[arg(short, long)]
