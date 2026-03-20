@@ -1,0 +1,17 @@
+{
+  "name": "rtk-changelog-tools",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "changelog:add": "tsx changelog/scripts/add.ts",
+    "changelog:validate": "tsx changelog/scripts/validate.ts",
+    "changelog:assemble": "tsx changelog/scripts/assemble.ts",
+    "changelog:audit": "tsx changelog/scripts/audit.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "yaml": "^2.7.0",
+    "@types/node": "^22.13.10"
+  }
+}

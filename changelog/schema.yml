@@ -1,0 +1,21 @@
+# RTK Changelog Fragment Schema
+# One file per PR — never edit manually, use `pnpm changelog:add`
+
+# Required fields
+pr: 123                          # PR number (must match filename prefix)
+type: feat                       # feat | fix | perf | refactor | security | docs | chore
+scope: "hook"                    # Functional scope (free text)
+title: "Short title < 80 chars"  # Will appear in CHANGELOG.md
+
+# Optional fields
+description: |
+  User-facing impact in 1-2 sentences (Markdown).
+breaking: false        # true → appears in Breaking Changes section
+migration: false       # true → shows ⚠️ Migration DB warning
+scripts: []            # Post-deploy commands (array of strings)
+  # Example:
+  # scripts:
+  #   - "node scripts/migrate-data.js --execute"
+
+# Naming rule: {PR_NUMBER}-{slug-kebab-case}.yml
+# The PR number in the filename MUST match the `pr` field.
