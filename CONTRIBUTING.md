@@ -50,6 +50,49 @@ chore(proxy): remove-deprecated-flags
 
 ---
 
+## Changelog Fragments
+
+Each PR needs a changelog fragment so CHANGELOG.md stays conflict-free. Nobody touches CHANGELOG.md directly — the release script assembles it from the fragments.
+
+### Workflow
+
+**Create a fragment when opening a PR:**
+
+```bash
+pnpm changelog:add
+# Fill in PR number, type, scope, title — a file is created at changelog/fragments/<PR>-<slug>.yml
+# Edit the description field, then commit the fragment with the PR
+git add changelog/fragments/<PR>-<slug>.yml
+git commit -s -m "docs(changelog): add fragment for PR #<PR>"
+```
+
+**CI validates the fragment automatically** (`pnpm changelog:validate <file>`). Fix any errors before merging.
+
+**At release time**, the maintainer runs:
+
+```bash
+pnpm changelog:assemble --version x.y.z [--dry-run]
+```
+
+This inserts the new version block into CHANGELOG.md and archives the fragments.
+
+### Bypass labels
+
+Some PRs don't need a fragment. Add one of these labels on GitHub to skip the check:
+
+| Label | When to use |
+|-------|-------------|
+| `skip-changelog` | Truly internal change with no user impact |
+| `dependencies` | Dependency bumps |
+| `release` | The release commit itself |
+| `chore: deps` | Automated dependency updates |
+
+### Fragment format
+
+See `changelog/schema.yml` for the full field reference. Required fields: `pr`, `type`, `scope`, `title`. Optional: `description`, `breaking`, `migration`, `scripts`.
+
+---
+
 ## Pull Request Process
 
 ### Scope Rules
