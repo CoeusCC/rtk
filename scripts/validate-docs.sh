@@ -26,7 +26,7 @@ PYTHON_GO_CMDS=("ruff" "pytest" "pip" "go" "golangci")
 echo "🐍 Checking Python/Go commands documentation..."
 
 for cmd in "${PYTHON_GO_CMDS[@]}"; do
-  for file in README.md CLAUDE.md; do
+  for file in README.md; do
     if [ ! -f "$file" ]; then
       echo "⚠️  $file not found, skipping"
       continue
@@ -37,7 +37,7 @@ for cmd in "${PYTHON_GO_CMDS[@]}"; do
     fi
   done
 done
-echo "✅ Python/Go commands: documented in README.md and CLAUDE.md"
+echo "✅ Python/Go commands: documented in README.md"
 
 # 4. Hooks cohérents avec doc
 HOOK_FILE=".claude/hooks/rtk-rewrite.sh"
