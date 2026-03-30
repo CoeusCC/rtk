@@ -2,7 +2,8 @@
 
 use crate::core::tracking;
 use crate::core::utils::{
-    exit_code_from_output, ok_confirmation, resolved_command, strip_ansi, truncate,
+    exit_code_from_output, exit_code_from_status, ok_confirmation, resolved_command, strip_ansi,
+    truncate,
 };
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
@@ -168,9 +169,33 @@ pub fn run_other(args: &[OsString], verbose: u8) -> Result<i32> {
 }
 
 fn passthrough_gt(subcommand: &str, args: &[String], verbose: u8) -> Result<i32> {
-    let mut os_args: Vec<OsString> = vec![OsString::from(subcommand)];
-    os_args.extend(args.iter().map(OsString::from));
-    crate::core::runner::run_passthrough("gt", &os_args, verbose)
+    let timer = tracking::TimedExecution::start();
+
+    let mut cmd = resolved_command("gt");
+    cmd.arg(subcommand);
+    for arg in args {
+        cmd.arg(arg);
+    }
+
+    if verbose > 0 {
+        eprintln!("Running: gt {} {}", subcommand, args.join(" "));
+    }
+
+    let status = cmd
+        .status()
+        .with_context(|| format!("Failed to run gt {}", subcommand))?;
+
+    let args_str = if args.is_empty() {
+        subcommand.to_string()
+    } else {
+        format!("{} {}", subcommand, args.join(" "))
+    };
+    timer.track_passthrough(
+        &format!("gt {}", args_str),
+        &format!("rtk gt {} (passthrough)", args_str),
+    );
+
+    Ok(exit_code_from_status(&status, "gt"))
 }
 
 const MAX_LOG_ENTRIES: usize = 15;

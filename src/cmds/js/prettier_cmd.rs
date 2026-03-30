@@ -1,6 +1,5 @@
 //! Filters Prettier output to show only files that need formatting.
 
-use crate::core::runner::{self, RunOptions};
 use crate::core::utils::package_manager_exec;
 use anyhow::Result;
 
@@ -15,12 +14,12 @@ pub fn run(args: &[String], verbose: u8) -> Result<i32> {
         eprintln!("Running: prettier {}", args.join(" "));
     }
 
-    runner::run_filtered(
+    crate::core::runner::run_filtered(
         cmd,
         "prettier",
         &args.join(" "),
         filter_prettier_output,
-        RunOptions::stdout_only(),
+        crate::core::runner::RunOptions::stdout_only(),
     )
 }
 

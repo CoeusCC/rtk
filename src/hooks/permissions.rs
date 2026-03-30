@@ -1,4 +1,3 @@
-use super::constants::{CLAUDE_DIR, SETTINGS_JSON, SETTINGS_LOCAL_JSON};
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -113,12 +112,12 @@ fn get_settings_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
 
     if let Some(root) = find_project_root() {
-        paths.push(root.join(CLAUDE_DIR).join(SETTINGS_JSON));
-        paths.push(root.join(CLAUDE_DIR).join(SETTINGS_LOCAL_JSON));
+        paths.push(root.join(".claude").join("settings.json"));
+        paths.push(root.join(".claude").join("settings.local.json"));
     }
     if let Some(home) = dirs::home_dir() {
-        paths.push(home.join(CLAUDE_DIR).join(SETTINGS_JSON));
-        paths.push(home.join(CLAUDE_DIR).join(SETTINGS_LOCAL_JSON));
+        paths.push(home.join(".claude").join("settings.json"));
+        paths.push(home.join(".claude").join("settings.local.json"));
     }
 
     paths
@@ -131,7 +130,7 @@ fn find_project_root() -> Option<PathBuf> {
     // Fast path: walk up CWD looking for .claude/ — no subprocess needed.
     let mut dir = std::env::current_dir().ok()?;
     loop {
-        if dir.join(CLAUDE_DIR).exists() {
+        if dir.join(".claude").exists() {
             return Some(dir);
         }
         if !dir.pop() {

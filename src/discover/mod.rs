@@ -1,6 +1,5 @@
 //! Scans AI coding sessions to find commands that could benefit from RTK filtering.
 
-pub mod lexer;
 pub mod provider;
 pub mod registry;
 mod report;

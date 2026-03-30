@@ -1,6 +1,5 @@
 //! Filters Go command output — test results, build errors, vet warnings.
 
-use crate::core::runner;
 use crate::core::tracking;
 use crate::core::utils::{exit_code_from_output, resolved_command, truncate};
 use crate::golangci_cmd;
@@ -56,7 +55,7 @@ pub fn run_test(args: &[String], verbose: u8) -> Result<i32> {
         eprintln!("Running: go test -json {}", args.join(" "));
     }
 
-    runner::run_filtered(
+    crate::core::runner::run_filtered(
         cmd,
         "go test",
         &args.join(" "),
@@ -77,7 +76,7 @@ pub fn run_build(args: &[String], verbose: u8) -> Result<i32> {
         eprintln!("Running: go build {}", args.join(" "));
     }
 
-    runner::run_filtered(
+    crate::core::runner::run_filtered(
         cmd,
         "go build",
         &args.join(" "),
@@ -98,7 +97,7 @@ pub fn run_vet(args: &[String], verbose: u8) -> Result<i32> {
         eprintln!("Running: go vet {}", args.join(" "));
     }
 
-    runner::run_filtered(
+    crate::core::runner::run_filtered(
         cmd,
         "go vet",
         &args.join(" "),

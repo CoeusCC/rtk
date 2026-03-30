@@ -1,6 +1,5 @@
 //! Raw output recovery -- saves unfiltered output to disk on command failure.
 
-use super::constants::RTK_DATA_DIR;
 use crate::core::config::Config;
 use std::path::PathBuf;
 
@@ -47,7 +46,7 @@ fn get_tee_dir(config: &Config) -> Option<PathBuf> {
     }
 
     // Default: ~/.local/share/rtk/tee/
-    dirs::data_local_dir().map(|d| d.join(RTK_DATA_DIR).join("tee"))
+    dirs::data_local_dir().map(|d| d.join("rtk").join("tee"))
 }
 
 /// Rotate old tee files: keep only the last `max_files`, delete oldest.
